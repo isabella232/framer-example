@@ -15,6 +15,12 @@ body {
 .star-block {
 
 }
+
+.big-star .star-block img {
+  width: 36px;
+  height: 36px;
+  margin-right: 8px;
+}
 .star-block img {
   width: 20px;
   height: 20px;

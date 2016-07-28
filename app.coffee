@@ -131,18 +131,23 @@ layerBg = new BackgroundLayer
 layerMenu = new Layer
   parent: menuBar
   image: "images/icon_w.png"
-  width: 21; height: 15; index: 2; x: 16; y: 18
-layerFilterButton = new Layer
-  parent: menuBar
-  backgroundColor: "transparent"
-  color: blue
-  html: "<strong>Filter</strong>"
-  width: 38; height: 23; index: 2; x: 328; y: 14
+  width: 21; height: 15; index: 2; x: 337; y: 18
+layerMenu.states.add
+  listButton: 
+    image: "images/icon_w.png"
+  mapButton: 
+    image: "images/map.png"
 menuBar = new Layer
   backgroundColor: "#fff"
   width: 375; height: 48; index: 1   
 
-
+layerMenu .on Events.Click, ->
+  if !locationList.visible
+    locationList.visible = true
+    layerMenu.states.switch("mapButton")
+  else 
+    locationList.visible = false
+    layerMenu.states.switch("listButton")
 
 markerContent .on Events.Click, ->
   i = parseInt(markerContent.states.current.replace(/[^0-9\.]/g, ''))
@@ -151,20 +156,22 @@ markerContent .on Events.Click, ->
    (err, dataset) -> 
    	  print err if err
   ).then((data) -> 
-  	contentPage.opacity = 1
+  	contentPage.visible = true
   	contentPage.html = generateContentPage(data.features[i], i)
   )
 
 generateContentPage = (feature, i) -> 
   contentPageImage.image = "images/" + (i + 1) + ".png"
   generateContentPageContent(feature)
+  generateRateModalContent(feature)
+  generateRateConfirmButton(feature, i)
   star = Number(feature.properties.review_score)
   generateStar(star)
   
 contentPage = new Layer
   height: Screen.height
   width: Screen.width
-  opacity: 0
+  visible: false
 
 contentPageMenuBar = new Layer
   parent: contentPage
@@ -174,8 +181,16 @@ backButton = new Layer
   parent: contentPageMenuBar
   backgroundColor: "transparent"
   color: blue
-  html: "<strong>Back to list</strong>"
-  width: 114; height: 19; index: 2; x: 15; y: 16
+  html: "<strong>Back</strong>"
+  width: 114; height: 19; index: 2; x: 32; y: 17
+backButtonImage = new Layer
+  parent: backButton
+  image: "images/back.png"
+  width: 12
+  height: 12
+  x: -20
+  y: 4
+   
 contentPageImage = new Layer
   parent: contentPage
   width: 375
@@ -214,39 +229,186 @@ starBlock = new Layer
   
     
 backButton.on Events.Click, -> 
-  contentPage.opacity = 0
+  contentPage.visible = false
 
 
-rateThis = new Layer
-  background: "transparent"
-  y: 111; opacity: 1, height: 97, x: 59, width: 269
+rateModalBg = new Layer
+  width: Screen.width
+  height: Screen.height
+  visible: false
 
+rateModal = new Layer
+  parent: rateModalBg
+  x: rateModalBg.midX - 157
+  width: 314
+  borderRadius: 4
+  backgroundColor: "rgba(255,255,255,1)"
+  height: 239
+  y: 159
+
+rateModalContent = new Layer
+  parent: rateModal
+  color: '#343434'
+  width: rateModal.width
+  height: rateModal.height
+  backgroundColor: "transparent"
+
+generateRateModalContent = (feature) ->
+  rateModalContent.html = "<div class='pad2 center'><div class='space-top2  big strong'>" + 
+    feature.properties.place_name + "</div><div class='small dim space-top1'><em>Click on the stars to rate</em></div></div>"
+
+rateModalStarSection = new Layer
+  html: "<div class='big-star center'>" + generateStar(0) + "</div>"
+  parent: rateModalContent
+  backgroundColor: "transparent"
+  y: 115
+  x: (rateModalContent.width - 226)/2 + 4
+  width: 226
+
+rateStarModal = new Layer
+  parent: rateModalStarSection
+  backgroundColor: "transparent"
+  width: 211
+  height: 40
+
+
+[0,1,2,3,4].forEach (i) ->
+  rateThis = new Layer
+    parent: rateModalStarSection
+    width: 44
+    backgroundColor: "transparent" 
+    height: 40
+    x: (i * 44) - 4
+  rateThis .on Events.Click, ->
+  	rateModalStarSection.states.switch("star"+ (i+1))
+  confirmRateThis = new Layer
+    parent: rateModalContent
+    backgroundColor: "transparent"
+    html: "<div class='round space-top2 center strong button'>Confirm<div>"
+    width: 256; x: 32; y: 154
+  confirmRateThis .on Events.Click, ->
+  	featureIndex = parseInt(markerContent.states.current.replace(/[^0-9\.]/g, ''))
+  	updateReviewScore(featureIndex, i)
+
+    
   
-rateThis.on Events.Click, ->
-  updateReviewScore(2, 3.2)
+rateModalStarSection.states.add
+  star0:
+    html: "<div class='big-star center'>" + generateStar(0) + "</div>"
+  star1:
+    html: "<div class='big-star center'>" + generateStar(1) + "</div>"
+  star2:
+    html: "<div class='big-star center'>" + generateStar(2) + "</div>"
+  star3:
+    html: "<div class='big-star center'>" + generateStar(3) + "</div>"
+  star4:
+    html: "<div class='big-star center'>" + generateStar(4) + "</div>"
+  star5:
+    html: "<div class='big-star center'>" + generateStar(5) + "</div>"
+   
+#
 
-updateReviewScore = (i, score) -> 
+updateReviewScore = (i, newScore) -> 
   mapboxClient.listFeatures(datasetID,{},
     (err, dataset) -> 
-      dataset.features[i].properties.review_score = score
-      print "hey"
+      feature = dataset.features[i]
+      oldScore = feature.properties.review_score
+      oldCount = feature.properties.review_count
+      dataset.features[i].properties.review_score =
+      (oldScore *  
+       oldCount + newScore)/(oldCount + 1)
+      dataset.features[i].properties.review_count = oldCount + 1
       updateFeature(dataset.features[i])
    )
 
 updateFeature = (feature) -> 
    mapboxClient.insertFeature(feature, datasetID, 
      (err, feature) ->
-       print "s"
-       print feature
-       print feature.properties.review_score 
+      
        generateContentPageContent(feature)
+       clearRateModal()
+       
    )
 
+rateThisButton = new Layer
+  parent: contentPageContent
+  y: 337
+  height: 40
+  width: 375
+  opacity: 0
+rateThisButton .on Events.Click, ->
+  rateModalBg.visible = true
+clearRateModal = () ->
+  rateModalBg.visible = false
+  rateModalStarSection.states.switch("star0")
 
 
 
- 	
+    
+locationList = new ScrollComponent
+  width: Screen.width
+  height: Screen.height - 48
+  scrollHorizontal: false
+  scrollVertical: true
+  y: 47
+  visible: false
+  
+locationListContent = new Layer
+  superLayer: locationList.content
+  backgroundColor: "#fff"
+  height: 1200
+  width: Screen.width
  
+ 
+mapboxClient.listFeatures(datasetID,{},
+ (err, dataset) -> 
+  # print dataset.features if !err
+   print err if err
+ 
+   # location grid
+   for feature,i in dataset.features
+     #img = document.createElement('div')
+     location = new Layer
+       parent: locationListContent
+       width: Screen.width - 40
+       height: 166
+       x: 20
+       y: Align.top(if i > 0 then 166 * i else 5) 
+       backgroundColor: "rgba(255,255,255,1)"
+       borderRadius: 6
+     # content
+     locationTitle = new Layer
+       parent: location
+       html: "<div><span class='small keyline-all keyline-blue text-blue dot'>" + feature.properties.category + "</span></div><div class='space-top1 strong'>" + feature.properties.place_name + "</div><div class='quiet space-top0 small'>" + feature.properties.address + "</div>"
+       x: 180
+       width: 159
+       backgroundColor: "rgba(255,255,255,0.5)"
+       color: "#353535"
+       height: 139
+       y: 23
+     
+     # image
+     locationImage = new Layer
+       parent: location
+       image: "images/" + (i + 1) + ".png"
+       borderRadius: 4
+       width: 166
+       height: 131
+       y: 17
+       x: -2
+      locationScore = new Layer
+        parent: locationImage
+        backgroundColor: blue
+        html: "<strong><center class='small'>" + feature.properties.review_score + "</center></strong>"
+        y: 97
+        height: 24
+        width: 40
+        borderRadius: 4
+        style:
+          "padding-top": "2px"
+        x: 9
+      
+)
  
  
  
