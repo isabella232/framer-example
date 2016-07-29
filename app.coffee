@@ -1,11 +1,11 @@
 # Define custom device
 Framer.DeviceView.Devices["custom"] =
-	"deviceType": "phone"
-	"screenWidth": 375
-	"screenHeight": 667
-	"deviceImage": ""
-	"deviceImageWidth": 375
-	"deviceImageHeight": 667
+	deviceType: "phone"
+	screenWidth: 375
+	screenHeight: 667
+	deviceImage: ""
+	deviceImageWidth: 375
+	deviceImageHeight: 667
 
 # Set custom device
 Framer.Device.deviceType = "custom"
@@ -27,7 +27,7 @@ mapboxLayer.width = mapWidth
 mapboxLayer.height = mapHeight
 mapboxLayer.html = "<div id='map'></div>"
 mapElement = mapboxLayer.querySelector("#map")
-mapElement.style.height = mapHeight + 'px'
+mapElement.style.height = "#{mapHeight}px"
 mapboxgl.accessToken = ''
 
 map = new mapboxgl.Map({
@@ -40,7 +40,7 @@ map = new mapboxgl.Map({
 
 
 # Fetch latest data and update map and marker content
-mapboxClient.listFeatures(datasetID,{},
+mapboxClient.listFeatures(datasetID, {},
    (err, dataset) -> 
    	  print err if err
 ).then((data) -> 
@@ -52,18 +52,20 @@ mapboxClient.listFeatures(datasetID,{},
 generateMap = (dataset) -> 
    # Load dataset as a source
    map.on("load", () -> 
-      map.addSource("points", 
-        {"type": "geojson", "data": 
-          {"type": "FeatureCollection", 
-          "features": dataset.features}
+      map.addSource("points",  {
+      	type: "geojson",
+      	data: {
+          type: "FeatureCollection", 
+          features: dataset.features
+        }
       })
    )
    dataset.features.forEach (feature, i) ->
      # Create an image element     
      img = document.createElement('img')
      img.className = "location-marker"
-     img.id = "location" + i
-     img.style.backgroundImage = "url('images/" + (i + 1) + ".png')"
+     img.id = "location#{i}"
+     img.style.backgroundImage = "url('images/#{(i + 1)}.png')"
      marker = new mapboxgl.Marker(img)
         .setLngLat(feature.geometry.coordinates).addTo(map)
      img.addEventListener("click",() -> 
@@ -90,11 +92,14 @@ removeAllActive = () ->
     highlightMarker.classList.remove('active')
       
 # Generate HTML a marker
-generateMarkerContent = (feature) -> 
-  return "<div class='round space-top0 pad2'><div>" + generateStar(feature.properties.review_score) + "<span class='location-score strong space-right0'>" +
-    feature.properties.review_score + "</span>" + "<span class='dim'> (" + 
-    feature.properties.review_count + " ratings)</span>" + "</div><div class='space-top1_5 big strong'>" + 
-    feature.properties.place_name + "</div><div class='dim space-top1 '>" + feature.properties.address + "</div><div class='round space-top1_5 center strong button'>Learn more<div></div>"
+generateMarkerContent = (feature) -> """"
+    <div class='round space-top0 pad2'><div>#{generateStar(feature.properties.review_score)}
+    <span class='location-score strong space-right0'>#{feature.properties.review_score}
+    </span><span class='dim'> (#{feature.properties.review_count} ratings)</span>
+    </div><div class='space-top1_5 big strong'>#{feature.properties.place_name}</div>
+    <div class='dim space-top1 '>#{feature.properties.address}</div>
+    <div class='round space-top1_5 center strong button'>Learn more<div></div>
+   """
 
 # Update content for each marker 
 generateContent = (dataset) -> 
@@ -161,7 +166,7 @@ markerContent .on Events.Click, ->
   )
 
 generateContentPage = (feature, i) -> 
-  contentPageImage.image = "images/" + (i + 1) + ".png"
+  contentPageImage.image = "images/#{i + 1}.png"
   generateContentPageContent(feature)
   generateRateModalContent(feature)
   generateRateConfirmButton(feature, i)
@@ -208,18 +213,31 @@ contentPageContent = new Layer
 
 
 generateContentPageContent = (feature) ->
-  contentPageContent.html = "<div class='round space-top0 pad2'><div><span class='keyline-all keyline-blue small text-blue dot'>" + feature.properties.category + "</span></div><div class='space-top2 big strong'>" + 
-    feature.properties.place_name + "</div><div class='dim space-top1'><em class=''>" + feature.properties.address + "</em></div><div class='inline dim'><em>Phone: " + feature.properties.tel + "</em></div><div class='quiet space-top1_5'>" + feature.properties.description + "</div><div class='space-top2'>" + generateStar(feature.properties.review_score) + "<span class='strong space-right0 '>" +
-    feature.properties.review_score + "</span>" + "<span class='dim'> (" + 
-    feature.properties.review_count + " ratings)</span></div>" + "<div class='round space-top2 center strong button'>Rate this<div></div>"
+  contentPageContent.html = """
+  <div class='round space-top0 pad2'>
+  	<div>
+  	<span class='keyline-all keyline-blue small text-blue dot'>
+  	  #{feature.properties.category}
+  	</span>
+  </div>
+  <div class='space-top2 big strong'>#{feature.properties.place_name}</div>
+  <div class='dim space-top1'><em class=''>#{feature.properties.address}</em></div>
+  <div class='inline dim'><em>Phone: #{feature.properties.tel}</em></div>
+  <div class='quiet space-top1_5'>#{feature.properties.description}</div>
+  <div class='space-top2'>#{generateStar(feature.properties.review_score)}
+  	<span class='strong space-right0 '>#{feature.properties.review_score}</span>
+  	<span class='dim'> (#{feature.properties.review_count} ratings)</span>
+  </div>
+  <div class='round space-top2 center strong button'>Rate this<div></div>
+  """
     
 generateStar = (rate) -> 
   rate = Number(rate)
   stars = Math.round(rate)
   graystars = 5 - Math.round(rate)
   h = "<div class='star-block inline space-right0'>"
-  h = h + "<img src='images/star-blue.png' />" for i in [0...stars]   
-  h = h + "<img src='images/star-gray.png' />" for i in [0...graystars]
+  h = h + "<img src='images/star-blue.png' />".repeat(stars)
+  h = h + "<img src='images/star-gray.png' />".repeat(graystars)
   h = h + "</div>"
 
 starBlock = new Layer
@@ -254,11 +272,18 @@ rateModalContent = new Layer
   backgroundColor: "transparent"
 
 generateRateModalContent = (feature) ->
-  rateModalContent.html = "<div class='pad2 center'><div class='space-top2  big strong'>" + 
-    feature.properties.place_name + "</div><div class='small dim space-top1'><em>Click on the stars to rate</em></div></div>"
+  rateModalContent.html = """
+  	<div class='pad2 center'>
+  	<div class='space-top2  big strong'>
+  	#{feature.properties.place_name}
+  	</div><div class='small dim space-top1'>
+  	<em>Click on the stars to rate</em>
+  	</div>
+  	</div>
+  	"""
 
 rateModalStarSection = new Layer
-  html: "<div class='big-star center'>" + generateStar(0) + "</div>"
+  html: "<div class='big-star center'>#{generateStar(0)}</div>"
   parent: rateModalContent
   backgroundColor: "transparent"
   y: 115
@@ -309,8 +334,7 @@ rateModalStarSection.states.add
 #
 
 updateReviewScore = (i, newScore) -> 
-  mapboxClient.listFeatures(datasetID,{},
-    (err, dataset) -> 
+  mapboxClient.listFeatures datasetID, {}, (err, dataset) -> 
       feature = dataset.features[i]
       oldScore = feature.properties.review_score
       oldCount = feature.properties.review_count
@@ -319,16 +343,11 @@ updateReviewScore = (i, newScore) ->
        oldCount + newScore)/(oldCount + 1)
       dataset.features[i].properties.review_count = oldCount + 1
       updateFeature(dataset.features[i])
-   )
 
 updateFeature = (feature) -> 
-   mapboxClient.insertFeature(feature, datasetID, 
-     (err, feature) ->
-      
+   mapboxClient.insertFeature feature, datasetID, (err, feature) ->
        generateContentPageContent(feature)
        clearRateModal()
-       
-   )
 
 rateThisButton = new Layer
   parent: contentPageContent
@@ -390,7 +409,7 @@ mapboxClient.listFeatures(datasetID,{},
      # image
      locationImage = new Layer
        parent: location
-       image: "images/" + (i + 1) + ".png"
+       image: "images/#{i + 1}.png"
        borderRadius: 4
        width: 166
        height: 131
@@ -399,7 +418,7 @@ mapboxClient.listFeatures(datasetID,{},
       locationScore = new Layer
         parent: locationImage
         backgroundColor: blue
-        html: "<strong><center class='small'>" + feature.properties.review_score + "</center></strong>"
+        html: "<strong><center class='small'>#{feature.properties.review_score}</center></strong>"
         y: 97
         height: 24
         width: 40
