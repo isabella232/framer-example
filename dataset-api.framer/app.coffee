@@ -12,7 +12,7 @@ Framer.Device.deviceType = "custom"
 { mapbox, mapboxgl } = require "npm"
 
 # This is a private access token
-mapboxAccessDatasetToken = ""
+mapboxAccessDatasetToken = "<put_your_private_token_here>"
 datasetID = "ciqs4qb3r02s6fynnibkq1rir"
 mapboxClient = new mapbox(mapboxAccessDatasetToken)
 blue = "4A90E2"
@@ -20,7 +20,7 @@ blue = "4A90E2"
 # Set up map background
 Canvas.backgroundColor = blue
 mapHeight = 670
-mapWidth = 375 
+mapWidth = 375
 
 mapboxLayer = new Layer
 mapboxLayer.ignoreEvents = false
@@ -31,7 +31,7 @@ mapElement = mapboxLayer.querySelector("#map")
 mapElement.style.height = "#{mapHeight}px"
 
 # This is a public access token
-mapboxgl.accessToken = ""
+mapboxgl.accessToken = "<put_your_public_token_here>"
 
 map = new mapboxgl.Map({
   container: mapElement
@@ -44,56 +44,56 @@ map = new mapboxgl.Map({
 
 # Fetch latest data and update map and marker content
 mapboxClient.listFeatures(datasetID, {},
-   (err, dataset) -> 
+   (err, dataset) ->
    	  print err if err
-).then((data) -> 
+).then((data) ->
   generateMap(data)
   generateContent(data)
 )
 
 # Generate markers on the map
-generateMap = (dataset) -> 
+generateMap = (dataset) ->
    # Load dataset as a source
-   map.on("load", () -> 
+   map.on("load", () ->
       map.addSource("points",  {
       	type: "geojson",
       	data: {
-          type: "FeatureCollection", 
+          type: "FeatureCollection",
           features: dataset.features
         }
       })
    )
    dataset.features.forEach (feature, i) ->
-     # Create an image element     
+     # Create an image element
      img = document.createElement('img')
      img.className = "location-marker"
      img.id = "location#{i}"
      img.style.backgroundImage = "url('images/#{(i + 1)}.png')"
      marker = new mapboxgl.Marker(img)
         .setLngLat(feature.geometry.coordinates).addTo(map)
-     img.addEventListener("click",() -> 
+     img.addEventListener("click",() ->
      	isAlreadyActive = img.classList.contains('active')
      	removeAllActive()
      	if isAlreadyActive
      	    markerContent.animate
-     	      properties: 
+     	      properties:
      	        opacity: 0
-     	    return 
+     	    return
         else
      	    img.classList.add('active')
      	    markerContent.animate
-     	      properties: 
+     	      properties:
      	        opacity: 1
-     	    markerContent.states.switch(img.id) 
-     	    return 
+     	    markerContent.states.switch(img.id)
+     	    return
      )
 
-# Remove all active marker classes 
+# Remove all active marker classes
 removeAllActive = () ->
   highlightedMarkers = document.querySelectorAll('.active')
   for highlightMarker,i in highlightedMarkers
     highlightMarker.classList.remove('active')
-      
+
 # Generate HTML a marker
 generateMarkerContent = (feature) -> """
     <div class='round space-top0 pad2'><div>#{generateStar(feature.properties.review_score)}
@@ -104,8 +104,8 @@ generateMarkerContent = (feature) -> """
     <div class='round space-top1_5 center strong button'>Learn more<div></div>
    """
 
-# Update content for each marker 
-generateContent = (dataset) -> 
+# Update content for each marker
+generateContent = (dataset) ->
   markerContent.states.add
     location0:
       html: generateMarkerContent(dataset.features[0])
@@ -133,7 +133,7 @@ markerContent.states.add
   empty:
     html: ""
     opacity: 0
-      
+
 layerBg = new BackgroundLayer
   backgroundColor: "#ffffff"
 layerMenu = new Layer
@@ -141,41 +141,42 @@ layerMenu = new Layer
   image: "images/icon_w.png"
   width: 21; height: 15; index: 2; x: 337; y: 18
 layerMenu.states.add
-  listButton: 
+  listButton:
     image: "images/icon_w.png"
-  mapButton: 
+  mapButton:
     image: "images/map.png"
 menuBar = new Layer
   backgroundColor: "#fff"
-  width: 375; height: 48; index: 1   
+  width: 375; height: 48; index: 1
 
 layerMenu .on Events.Click, ->
   if !locationList.visible
     locationList.visible = true
     layerMenu.states.switch("mapButton")
-  else 
+  else
     locationList.visible = false
     layerMenu.states.switch("listButton")
 
 markerContent .on Events.Click, ->
   i = parseInt(markerContent.states.current.replace(/[^0-9\.]/g, ''))
-  
+
   mapboxClient.listFeatures(datasetID,{},
-   (err, dataset) -> 
+   (err, dataset) ->
    	  print err if err
-  ).then((data) -> 
+  ).then((data) ->
   	contentPage.visible = true
   	contentPage.html = generateContentPage(data.features[i], i)
   )
 
-generateContentPage = (feature, i) -> 
+# Generate a content page for each marker
+generateContentPage = (feature, i) ->
   contentPageImage.image = "images/#{i + 1}.png"
   generateContentPageContent(feature)
   generateRateModalContent(feature)
   generateRateConfirmButton(feature, i)
   star = Number(feature.properties.review_score)
   generateStar(star)
-  
+
 contentPage = new Layer
   height: Screen.height
   width: Screen.width
@@ -199,7 +200,7 @@ backButtonImage = new Layer
   height: 12
   x: -20
   y: 4
-   
+
 contentPageImage = new Layer
   parent: contentPage
   width: 375
@@ -213,8 +214,6 @@ contentPageContent = new Layer
   height: 467
   color: '#343434'
   backgroundColor: "#fff"
-
-
 
 generateContentPageContent = (feature) ->
   contentPageContent.html = """
@@ -234,13 +233,15 @@ generateContentPageContent = (feature) ->
   </div>
   <div class='round space-top2 center strong button'>Rate this<div></div>
   """
-    
-generateStar = (rate) -> 
+
+
+# Generate the star block based on ratings
+generateStar = (rate) ->
   rate = Number(rate)
   stars = Math.round(rate)
   graystars = 5 - Math.round(rate)
   h = "<div class='star-block inline space-right0'>"
-  h = h + "<img src='images/star-blue.png' />" for i in [0...stars] 
+  h = h + "<img src='images/star-blue.png' />" for i in [0...stars]
   h = h + "<img src='images/star-gray.png' />" for i in [0...graystars]
   h = h + "</div>"
 
@@ -248,11 +249,9 @@ starBlock = new Layer
 	y: 556
 	height: 33
 	backgroundColor: "transparent"
-  
-    
-backButton.on Events.Click, -> 
-  contentPage.visible = false
 
+backButton.on Events.Click, ->
+  contentPage.visible = false
 
 rateModalBg = new Layer
   width: Screen.width
@@ -300,12 +299,12 @@ rateStarModal = new Layer
   width: 211
   height: 40
 
-
+# Update star block based on user actions
 [0,1,2,3,4].forEach (i) ->
   rateThis = new Layer
     parent: rateModalStarSection
     width: 44
-    backgroundColor: "transparent" 
+    backgroundColor: "transparent"
     height: 40
     x: (i * 44) - 4
   rateThis .on Events.Click, ->
@@ -319,18 +318,18 @@ rateStarModal = new Layer
   	featureIndex = parseInt(markerContent.states.current.replace(/[^0-9\.]/g, ''))
   	updateReviewScore(featureIndex, i)
 
-updateReviewScore = (i, newScore) -> 
-  mapboxClient.listFeatures datasetID, {}, (err, dataset) -> 
+updateReviewScore = (i, newScore) ->
+  mapboxClient.listFeatures datasetID, {}, (err, dataset) ->
       feature = dataset.features[i]
       oldScore = feature.properties.review_score
       oldCount = feature.properties.review_count
       dataset.features[i].properties.review_score =
-      (oldScore *  
+      (oldScore *
        oldCount + newScore)/(oldCount + 1)
       dataset.features[i].properties.review_count = oldCount + 1
       updateFeature(dataset.features[i])
 
-updateFeature = (feature) -> 
+updateFeature = (feature) ->
    mapboxClient.insertFeature feature, datasetID, (err, feature) ->
        generateContentPageContent(feature)
        clearRateModal()
@@ -348,8 +347,7 @@ clearRateModal = () ->
   rateModalStarSection.html = "<div class='big-star center'>#{generateStar(0)}</div>"
 
 
-
-    
+# Create a list of locations
 locationList = new ScrollComponent
   width: Screen.width
   height: Screen.height - 48
@@ -357,19 +355,19 @@ locationList = new ScrollComponent
   scrollVertical: true
   y: 47
   visible: false
-  
+
 locationListContent = new Layer
   superLayer: locationList.content
   backgroundColor: "#fff"
   height: 1200
   width: Screen.width
- 
- 
+
+
 mapboxClient.listFeatures(datasetID,{},
- (err, dataset) -> 
+ (err, dataset) ->
   # print dataset.features if !err
    print err if err
- 
+
    # location grid
    for feature,i in dataset.features
      #img = document.createElement('div')
@@ -378,7 +376,7 @@ mapboxClient.listFeatures(datasetID,{},
        width: Screen.width - 40
        height: 166
        x: 20
-       y: Align.top(if i > 0 then 166 * i else 5) 
+       y: Align.top(if i > 0 then 166 * i else 5)
        backgroundColor: "rgba(255,255,255,1)"
        borderRadius: 6
      # content
@@ -391,7 +389,7 @@ mapboxClient.listFeatures(datasetID,{},
        color: "#353535"
        height: 139
        y: 23
-     
+
      # image
      locationImage = new Layer
        parent: location
@@ -412,10 +410,10 @@ mapboxClient.listFeatures(datasetID,{},
         style:
           "padding-top": "2px"
         x: 9
-      
+
 )
- 
- 
- 
- 
- 
+
+
+
+
+
