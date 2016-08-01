@@ -12,7 +12,7 @@ Framer.Device.deviceType = "custom"
 { mapbox, mapboxgl } = require "npm"
 
 # This is a private access token
-mapboxAccessDatasetToken = "<your_mapbox_access_token>"
+mapboxAccessDatasetToken = ""
 datasetID = "ciqs4qb3r02s6fynnibkq1rir"
 mapboxClient = new mapbox(mapboxAccessDatasetToken)
 blue = "4A90E2"
@@ -31,7 +31,7 @@ mapElement = mapboxLayer.querySelector("#map")
 mapElement.style.height = "#{mapHeight}px"
 
 # This is a public access token
-mapboxgl.accessToken = '<your_mapbox_access_token>'
+mapboxgl.accessToken = ""
 
 map = new mapboxgl.Map({
   container: mapElement
@@ -95,7 +95,7 @@ removeAllActive = () ->
     highlightMarker.classList.remove('active')
       
 # Generate HTML a marker
-generateMarkerContent = (feature) -> """"
+generateMarkerContent = (feature) -> """
     <div class='round space-top0 pad2'><div>#{generateStar(feature.properties.review_score)}
     <span class='location-score strong space-right0'>#{feature.properties.review_score}
     </span><span class='dim'> (#{feature.properties.review_count} ratings)</span>
@@ -159,7 +159,7 @@ layerMenu .on Events.Click, ->
 
 markerContent .on Events.Click, ->
   i = parseInt(markerContent.states.current.replace(/[^0-9\.]/g, ''))
-
+  
   mapboxClient.listFeatures(datasetID,{},
    (err, dataset) -> 
    	  print err if err
@@ -179,6 +179,7 @@ generateContentPage = (feature, i) ->
 contentPage = new Layer
   height: Screen.height
   width: Screen.width
+  x: 0
   visible: false
 
 contentPageMenuBar = new Layer
@@ -308,7 +309,7 @@ rateStarModal = new Layer
     height: 40
     x: (i * 44) - 4
   rateThis .on Events.Click, ->
-  	rateModalStarSection.states.switch("star"+ (i+1))
+  	rateModalStarSection.html = "<div class='big-star center'>#{generateStar(i+1)}</div>"
   confirmRateThis = new Layer
     parent: rateModalContent
     backgroundColor: "transparent"
@@ -317,24 +318,6 @@ rateStarModal = new Layer
   confirmRateThis .on Events.Click, ->
   	featureIndex = parseInt(markerContent.states.current.replace(/[^0-9\.]/g, ''))
   	updateReviewScore(featureIndex, i)
-
-    
-  
-rateModalStarSection.states.add
-  star0:
-    html: "<div class='big-star center'>" + generateStar(0) + "</div>"
-  star1:
-    html: "<div class='big-star center'>" + generateStar(1) + "</div>"
-  star2:
-    html: "<div class='big-star center'>" + generateStar(2) + "</div>"
-  star3:
-    html: "<div class='big-star center'>" + generateStar(3) + "</div>"
-  star4:
-    html: "<div class='big-star center'>" + generateStar(4) + "</div>"
-  star5:
-    html: "<div class='big-star center'>" + generateStar(5) + "</div>"
-   
-#
 
 updateReviewScore = (i, newScore) -> 
   mapboxClient.listFeatures datasetID, {}, (err, dataset) -> 
@@ -362,7 +345,7 @@ rateThisButton .on Events.Click, ->
   rateModalBg.visible = true
 clearRateModal = () ->
   rateModalBg.visible = false
-  rateModalStarSection.states.switch("star0")
+  rateModalStarSection.html = "<div class='big-star center'>#{generateStar(0)}</div>"
 
 
 
