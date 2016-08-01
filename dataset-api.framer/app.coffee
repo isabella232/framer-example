@@ -108,18 +108,25 @@ generateMarkerContent = (feature) -> """
 generateContent = (dataset) ->
   markerContent.states.add
     location0:
+      name: dataset.features[0].id
       html: generateMarkerContent(dataset.features[0])
     location1:
+      name: dataset.features[1].id
       html: generateMarkerContent(dataset.features[1])
     location2:
+      name: dataset.features[2].id
       html: generateMarkerContent(dataset.features[2])
     location3:
+      name: dataset.features[3].id
       html: generateMarkerContent(dataset.features[3])
     location4:
+      name: dataset.features[4].id
       html: generateMarkerContent(dataset.features[4])
     location5:
+      name: dataset.features[5].id
       html: generateMarkerContent(dataset.features[5])
     location6:
+      name: dataset.features[6].id
       html: generateMarkerContent(dataset.features[6])
 
 markerContent = new Layer
@@ -315,20 +322,20 @@ rateStarModal = new Layer
     html: "<div class='round space-top2 center strong button'>Confirm<div>"
     width: 256; x: 32; y: 154
   confirmRateThis .on Events.Click, ->
-  	featureIndex = parseInt(markerContent.states.current.replace(/[^0-9\.]/g, ''))
-  	updateReviewScore(featureIndex, i)
+  	updateReviewScore(markerContent.name, i)
 
-updateReviewScore = (i, newScore) ->
-  mapboxClient.listFeatures datasetID, {}, (err, dataset) ->
-      feature = dataset.features[i]
-      oldScore = feature.properties.review_score
-      oldCount = feature.properties.review_count
-      dataset.features[i].properties.review_score =
-      (oldScore *
-       oldCount + newScore)/(oldCount + 1)
-      dataset.features[i].properties.review_count = oldCount + 1
-      updateFeature(dataset.features[i])
+updateReviewScore = (featureID, newScore) ->
+  # Fetch the feature
+  mapboxClient.readFeature featureID, datasetID, (err, feature) -> 
+    oldScore = feature.properties.review_score
+    oldCount = feature.properties.review_count
+    feature.properties.review_score =
+    (oldScore *
+     oldCount + newScore)/(oldCount + 1)
+    feature.properties.review_count = oldCount + 1
+    updateFeature(feature)
 
+# Update the feature with the new data
 updateFeature = (feature) ->
    mapboxClient.insertFeature feature, datasetID, (err, feature) ->
        generateContentPageContent(feature)
@@ -383,33 +390,30 @@ mapboxClient.listFeatures(datasetID,{},
      locationTitle = new Layer
        parent: location
        html: "<div><span class='small keyline-all keyline-blue text-blue dot'>" + feature.properties.category + "</span></div><div class='space-top1 strong'>" + feature.properties.place_name + "</div><div class='quiet space-top0 small'>" + feature.properties.address + "</div>"
-       x: 180
-       width: 159
+       x: 180; y: 23
+       width: 159; height: 139
        backgroundColor: "rgba(255,255,255,0.5)"
        color: "#353535"
-       height: 139
-       y: 23
+       
+       
 
      # image
      locationImage = new Layer
        parent: location
        image: "images/#{i + 1}.png"
        borderRadius: 4
-       width: 166
-       height: 131
-       y: 17
-       x: -2
+       width: 166; height: 131
+       y: 17; x: -2
+       
       locationScore = new Layer
         parent: locationImage
         backgroundColor: blue
         html: "<strong><center class='small'>#{feature.properties.review_score}</center></strong>"
-        y: 97
-        height: 24
-        width: 40
+        y: 97; x: 9
+        height: 24; width: 40
         borderRadius: 4
         style:
           "padding-top": "2px"
-        x: 9
 
 )
 
