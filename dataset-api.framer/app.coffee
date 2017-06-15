@@ -326,7 +326,7 @@ rateStarModal = new Layer
 
 updateReviewScore = (featureID, newScore) ->
   # Fetch the feature
-  mapboxClient.readFeature featureID, datasetID, (err, feature) -> 
+  mapboxClient.readFeature featureID, datasetID, (err, feature) ->
     oldScore = feature.properties.review_score
     oldCount = feature.properties.review_count
     feature.properties.review_score =
@@ -394,8 +394,8 @@ mapboxClient.listFeatures(datasetID,{},
        width: 159; height: 139
        backgroundColor: "rgba(255,255,255,0.5)"
        color: "#353535"
-       
-       
+
+
 
      # image
      locationImage = new Layer
@@ -404,7 +404,7 @@ mapboxClient.listFeatures(datasetID,{},
        borderRadius: 4
        width: 166; height: 131
        y: 17; x: -2
-       
+
       locationScore = new Layer
         parent: locationImage
         backgroundColor: blue
