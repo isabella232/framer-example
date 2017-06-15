@@ -2,7 +2,7 @@
 
 _Last updated for Framer V93_
 
-# 🔧 Basic set up
+# Basic set up 🔧 
 
 ### 1. Get an API access token
 Sign up and get a Mapbox access token from [the token page](https://www.mapbox.com/studio/account/tokens/). We recommend you create a custom token for all your projects instead of using the default token so it's easier to track usage. Note your token must include all the public scopes.
@@ -26,7 +26,7 @@ mapboxgl = require("npm").mapboxgl
 Now your can use the object of mapboxgl such as `mapboxgl.Map`. To learn more about the methods and properties available read the [Mapbox GL JS documentation](https://www.mapbox.com/mapbox-gl-js/api/#map). 
 
 
-# 🌟 Explore examples
+# Explore examples 🌟 
 
 Open your project in Framer and copy paste the code in `app.coffee`. Note that you will still need to use your own access token. 
 
@@ -35,12 +35,12 @@ Open your project in Framer and copy paste the code in `app.coffee`. Note that y
 
 <img src="https://user-images.githubusercontent.com/5186564/27195034-06eb4722-51d3-11e7-828f-2d69752980f8.gif" />
 
-# 🌍 Select a map style
+# Select a map style 🌍 
 
 When you add a new `mapboxgl.Map` object, you will need to specify a map style URL. You can select from one of the [six default map styles](https://www.mapbox.com/mapbox-gl-js/api/#map). Or you can design your own style in [Mapbox Studio](https://www.mapbox.com/mapbox-studio/), which gives you full control over color, font and other details. To use your custom style, go to the [style listing page](https://www.mapbox.com/studio/styles/), click on the hamburger icon, and copy paste the URL from the popover.
 
 ![hey](https://user-images.githubusercontent.com/5186564/27195772-0b37e9a4-51d6-11e7-9d67-53e645270785.gif)
 
-# 🖌 Design @1x
+# Design @1x 🖌 
 
 Mapbox automatically loads 2x map tiles based on screen pixel density (retina or normal screen). But when you are requesting a 2x pixel-sized map to fit in a 1x container, the map will appear shrinked and map labels will not be readible. It's better set your zoom level at 100% and always design @1x. 
