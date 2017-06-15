@@ -41,3 +41,6 @@ When you add a new `mapboxgl.Map` object, you will need to specify a map style U
 
 ![hey](https://user-images.githubusercontent.com/5186564/27195772-0b37e9a4-51d6-11e7-9d67-53e645270785.gif)
 
+## Design @1x
+
+Mapbox automatically loads 2x map tiles based on screen pixel density (retina or normal screen). But when you are requesting a 2x pixel-sized map to fit in a 1x container, the map will appear shrinked and map labels will not be readible. So it's better set your zoom level at 100% and always design @1x. 
