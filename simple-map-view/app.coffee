@@ -2,13 +2,13 @@ mapboxgl = require("npm").mapboxgl
 
 mapboxLayer = new Layer
     ignoreEvents: false
-    width: Framer.Device.screen.height + 'px'
-    height: Framer.Device.screen.width  + 'px'
+    width: Framer.Device.screen.height
+    height: Framer.Device.screen.width
     html: "<div id='map'></div>"
 
 mapElement = mapboxLayer.querySelector("#map")
-mapElement.style.height = Framer.Device.screen.height
-mapElement.style.width = Framer.Device.screen.width
+mapElement.style.height = Framer.Device.screen.height + 'px'
+mapElement.style.width = Framer.Device.screen.width + 'px'
 
 mapboxgl.accessToken="<put_your_private_token_here>"
 
