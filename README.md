@@ -1,3 +1,7 @@
+### ⚠️ This repo is archived ⚠️ 
+
+You can still fork this repo if you wish, but there are no plans for the Mapbox team to work on this project.
+
 # Build Framer prototypes with Mapbox  
 
 _Last updated for Framer V93_
